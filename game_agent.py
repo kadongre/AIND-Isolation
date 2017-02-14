@@ -138,7 +138,8 @@ class CustomPlayer:
             while True:
                 if (self.method == 'minimax'):
                     my_score, my_move = self.minimax(game, self.search_depth)
-                                    
+                elif (self.method == 'alphabeta'):
+                    my_score, my_move = self.alphabeta(game, self.search_depth)
                 return my_move
                             
         except Timeout:
@@ -255,5 +256,43 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        #Alpha–beta pruning fail-soft psuedocode
+        #https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
+        recommended_move = (-1, -1)
+        
+        #check if end of depth bound has been reached or if end of the sub-tree has been reached
+        legal_moves = game.get_legal_moves()              
+        if depth == 0 or len(legal_moves) == 0:
+            return self.score(game, self), recommended_move
+            
+        #when playing maximizing mode    
+        if maximizing_player:
+            best_score = float("-inf")
+            for attempt_move in legal_moves:
+                result_score, result_move = self.alphabeta(game.forecast_move(attempt_move), depth - 1, alpha, beta, False)
+                if result_score > best_score:
+                    #update the best values
+                    best_score = result_score
+                    recommended_move = attempt_move
+                    alpha = max(alpha, best_score)
+                if beta <=  alpha:
+                    #break
+                    return result_score, attempt_move            
+
+            return best_score, recommended_move
+ 
+        #when playing maximizing mode    
+        else:
+            best_score = float("inf")
+            for attempt_move in legal_moves:
+                result_score, result_move = self.alphabeta(game.forecast_move(attempt_move), depth - 1, alpha, beta, True)
+                if result_score < best_score:
+                    #update the best values
+                    best_score = result_score
+                    recommended_move = attempt_move
+                    beta = min(beta, best_score)
+                if beta <=  alpha:
+                    #break
+                    return result_score, attempt_move            
+                
+            return best_score, recommended_move
