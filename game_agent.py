@@ -117,27 +117,37 @@ class CustomPlayer:
         """
 
         self.time_left = time_left
-
-        # TODO: finish this function!
-
+        
         # Perform any required initializations, including selecting an initial
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
 
+        #initialize the selected_move  
+        my_move = (-1, -1)
+        
+        #check to see if there any legal move
+        if len(legal_moves) == 0:
+            return my_move
+        
         try:
             # The search method call (alpha beta or minimax) should happen in
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            pass
-
+                                    
+            while True:
+                if (self.method == 'minimax'):
+                    my_score, my_move = self.minimax(game, self.search_depth)
+                                    
+                return my_move
+                            
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            pass
+            my_move
 
         # Return the best move from the last completed search iteration
-        raise NotImplementedError
-
+        return my_move
+        
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
 
@@ -171,9 +181,38 @@ class CustomPlayer:
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
+        
+        #Mini-Max limited depth psuedocode
+        #https://en.wikipedia.org/wiki/Minimax
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        recommended_move = (-1, -1)
+        
+        #check if end of depth bound has been reached or if end of the sub-tree has been reached
+        legal_moves = game.get_legal_moves()              
+        if depth == 0 or len(legal_moves) == 0:
+            return self.score(game, self), recommended_move
+            
+        #    
+        if maximizing_player:
+            best_score = float("-inf")
+            for attempt_move in legal_moves:
+                result_score, result_move = self.minimax(game.forecast_move(attempt_move), depth - 1, False)
+                if result_score > best_score:
+                    best_score = result_score
+                    recommended_move = attempt_move
+            
+            return best_score, recommended_move
+            
+        else:
+            best_score = float("inf")
+            for attempt_move in legal_moves:
+                result_score, result_move = self.minimax(game.forecast_move(attempt_move), depth - 1, True)
+                if result_score < best_score:
+                    best_score = result_score
+                    recommended_move = attempt_move
+            
+            return best_score, recommended_move
+                    
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
