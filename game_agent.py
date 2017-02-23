@@ -7,6 +7,7 @@ You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
 import random
+import math
 
 
 class Timeout(Exception):
@@ -36,10 +37,63 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
+    if game.is_loser(player):
+        return float("-inf")
+    elif game.is_winner(player):
+        return float("inf")
+    
+    evaluation_function = 3
+    
+    if evaluation_function == 1:
+        #use an evaluation function of the number of own move vs 2 * opponent moves as described in Lesson 6
+        num_my_moves = len(game.get_legal_moves(player))
+        num_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+        
+        W = 2.0
+        return float(num_my_moves - (W * num_opponent_moves))
+    elif evaluation_function == 2:
+        #use an evaluation function of the ratio of number of own move to number of free spaces on the board
+        num_free_spaces = len(game.get_blank_spaces())
+        num_my_moves = len(game.get_legal_moves(player))
+        num_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+        
+    
+        #return float(num_my_moves/num_free_spaces)  
+        if num_opponent_moves == 0:
+            return float("inf")
+        else:
+            #return float(num_free_spaces/num_opponent_moves)  
+            return float(num_my_moves/num_opponent_moves)  
 
-    # TODO: finish this function!
-    raise NotImplementedError
+    elif evaluation_function == 3:
+        #use an evaluation function of the ratio of number of own move to number of free spaces on the board
 
+        my_moves = game.get_legal_moves(player)
+        opponent_moves = game.get_legal_moves(game.get_opponent(player))
+
+        my_score = 0
+        opponent_score = 0
+
+        c_x = game.height / 2
+        c_y = game.width / 2
+
+        for m_x, m_y in my_moves:
+            if m_x == 0 or m_x == game.height - 1 or m_y == 0 or m_y == game.width - 1:
+                my_score += 1.0
+            elif m_x > c_x - 2 and m_x < c_x + 2 and m_y > c_y - 2 and m_y < c_y + 2:
+                my_score += 3.0
+            else:
+                my_score += 2.0
+
+        for o_x, o_y in opponent_moves:
+            if o_x == 0 or o_x == game.height - 1 or o_y == 0 or o_y == game.width - 1:
+                opponent_score += 1.0
+            elif o_x > c_x - 2 and o_x < c_x + 2 and o_y > c_y - 2 and o_y < c_y + 2:
+                opponent_score += 3.0
+            else:
+                opponent_score += 2.0
+
+        return (my_score - opponent_score)
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
@@ -122,6 +176,10 @@ class CustomPlayer:
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
 
+        #a simple opening book move
+        if game.move_count == 1:
+            return (game.height / 2, game.width / 2)
+
         #initialize the selected_move  
         my_move = (-1, -1)
         
@@ -135,23 +193,24 @@ class CustomPlayer:
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
             
+            depth = self.search_depth
             if self.iterative:
-                self.search_depth = 1
-            
+                depth = 1
+                        
             while True:
                 if (self.method == 'minimax'):
-                    my_score, my_move = self.minimax(game, self.search_depth)
+                    my_score, my_move = self.minimax(game, depth)
                 elif (self.method == 'alphabeta'):
-                    my_score, my_move = self.alphabeta(game, self.search_depth)
+                    my_score, my_move = self.alphabeta(game, depth)
             
                 if self.iterative:
-                    self.search_depth += 1
+                    depth += 1
                 else:
                     return my_move
                             
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            my_move
+            return my_move
 
         # Return the best move from the last completed search iteration
         return my_move
