@@ -66,7 +66,8 @@ def custom_score(game, player):
             return float(num_my_moves/num_opponent_moves)  
 
     elif evaluation_function == 3:
-        #use an evaluation function of the ratio of number of own move to number of free spaces on the board
+        #use an evaluation function that weights the available moves based on board position
+        #moves in the center of the board are weighted more than the borders
 
         my_moves = game.get_legal_moves(player)
         opponent_moves = game.get_legal_moves(game.get_opponent(player))
@@ -192,7 +193,29 @@ class CustomPlayer:
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            
+
+            #optimize on the search depth and avoid timeouts
+            # if self.iterative:
+            #     max_depth = len(game.get_blank_spaces())
+            # else:
+            #     max_depth = self.search_depth
+            #
+            # if self.iterative:
+            #     for depth in range(1, max_depth):
+            #         if self.time_left() <= self.TIMER_THRESHOLD:
+            #             return my_move
+            #
+            #         if (self.method == 'minimax'):
+            #             my_score, my_move = self.minimax(game, depth)
+            #         elif (self.method == 'alphabeta'):
+            #             my_score, my_move = self.alphabeta(game, depth)
+            #
+            # else:
+            #     if (self.method == 'minimax'):
+            #         my_score, my_move = self.minimax(game, max_depth)
+            #     elif (self.method == 'alphabeta'):
+            #         my_score, my_move = self.alphabeta(game, max_depth)
+
             depth = self.search_depth
             if self.iterative:
                 depth = 1
